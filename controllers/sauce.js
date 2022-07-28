@@ -2,21 +2,42 @@ const Sauce = require('../models/sauce');
 const fs = require('fs');
 const sauce = require('../models/sauce');
 
-exports.modifySauce = (req, res, next) => { //fix it
+exports.modifySauce = (req, res, next) => {
     let sauce = new Sauce({ _id: req.params.id });
+    req.body.sauce = JSON.parse(req.body.sauce);
+    const url = req.protocol + '://' + req.get('host');
     if(req.file){
-        const url = req.protocol + '://' + req.get('host');
-        req.body.sauce = JSON.parse(req.body.sauce);
-        sauce = {
-            _id: req.params.id,
-            userId: req.body.sauce.userId,
-            name: req.body.sauce.name,
-            manufacturer: req.body.sauce.manufacturer,
-            description: req.body.sauce.description,
-            mainPepper: req.body.sauce.mainPepper,
-            imageUrl: url + '/images/' + req.file.filename,
-            heat: req.body.sauce.heat,
-        }        
+        Sauce.findOne({_id: req.params.id}).then(
+            (sauce) => {
+                let oldPicture = sauce.imageUrl.split('/images/')[1]; 
+                fs.unlink('images/' + oldPicture, () => {
+                    sauce = {
+                        _id: req.params.id,
+                        userId: req.body.sauce.userId,
+                        name: req.body.sauce.name,
+                        manufacturer: req.body.sauce.manufacturer,
+                        description: req.body.sauce.description,
+                        mainPepper: req.body.sauce.mainPepper,
+                        imageUrl: url + '/images/' + req.file.filename,
+                        heat: req.body.sauce.heat,
+                    }
+                    Sauce.updateOne({ _id: req.params.id }, sauce).then(
+                        () => {
+                            res.status(200).json({
+                                message: 'Sauce updated successfully!'
+                            });
+                        }
+                    ).catch(
+                        (error) => {
+                            res.status(400).json({
+                                error: error
+                            });
+                        }
+                    );
+                }
+            );
+        });
+
     } else {
         sauce = {
             _id: req.params.id,
@@ -24,10 +45,8 @@ exports.modifySauce = (req, res, next) => { //fix it
             manufacturer: req.body.manufacturer,
             description: req.body.description,
             mainPepper: req.body.mainPepper,
-            imageUrl: req.body.imageUrl,
             heat: req.body.heat
         };
-    };
     Sauce.updateOne({ _id: req.params.id }, sauce).then(
         () => {
             res.status(200).json({
@@ -40,7 +59,7 @@ exports.modifySauce = (req, res, next) => { //fix it
                 error: error
             });
         }
-    );
+    )};
 }; 
 
 exports.createSauce = (req, res, next) => {
