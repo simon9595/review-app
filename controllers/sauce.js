@@ -4,11 +4,11 @@ const sauce = require('../models/sauce');
 
 exports.modifySauce = (req, res, next) => {
     let sauce = new Sauce({ _id: req.params.id });
-    req.body.sauce = JSON.parse(req.body.sauce);
     const url = req.protocol + '://' + req.get('host');
     if(req.file){
         Sauce.findOne({_id: req.params.id}).then(
             (sauce) => {
+                req.body.sauce = JSON.parse(req.body.sauce);
                 let oldPicture = sauce.imageUrl.split('/images/')[1]; 
                 fs.unlink('images/' + oldPicture, () => {
                     sauce = {
@@ -46,7 +46,7 @@ exports.modifySauce = (req, res, next) => {
             description: req.body.description,
             mainPepper: req.body.mainPepper,
             heat: req.body.heat
-        };
+        }
     Sauce.updateOne({ _id: req.params.id }, sauce).then(
         () => {
             res.status(200).json({
