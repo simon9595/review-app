@@ -1,13 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+require('dotenv').config();
 const path = require('path');
 
 const sauceRoutes = require('./routes/sauce');
 const userRoutes = require('./routes/user');
 
 const app = express();
-mongoose.connect('mongodb+srv://szymon:6fbQ6TyNOEzOcdUG@cluster0.vlrll.mongodb.net/P6?retryWrites=true&w=majority')
+mongoose.connect(process.env.LOGIN)
     .then(() => {
         console.log('Successfully connected to MongoDB!');
     })
